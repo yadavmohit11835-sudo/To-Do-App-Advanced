@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>React Day 9 – Todo App Advanced</title>
+
+<!-- React CDN -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+function TodoAppAdvanced() {
+  // 🔹 State: Tasks load from localStorage initially
+  const [tasks, setTasks] = React.useState(() => {
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // 🔹 State: Input field value + Edit index
+  const [input, setInput] = React.useState(""); // Input field
+  const [editIndex, setEditIndex] = React.useState(null); // Kaunsa task edit ho raha
+
+  React.useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+ 
+  const addTask = () => {
+    if(input.trim() === "") return; // Empty input ignore
+
+    if(editIndex !== null) {
+      // Editing existing task ✏️
+      const newTasks = tasks.map((task, i) => i === editIndex ? { ...task, text: input } : task);
+      setTasks(newTasks);
+      setEditIndex(null); // Edit done
+    } else {
+      // Adding new task 📝
+      setTasks([...tasks, { text: input, completed: false }]);
+    }
+
+    setInput(""); // Input clear
+  };
+
+ 
+  const deleteTask = (index) => {
+    const newTasks = tasks.filter((_, i) => i !== index);
+    setTasks(newTasks);
+  };
+
+  
+  const toggleComplete = (index) => {
+    const newTasks = tasks.map((task, i) => i === index ? { ...task, completed: !task.completed } : task);
+    setTasks(newTasks);
+  };
+
+ 
+  const editTask = (index) => {
+    setInput(tasks[index].text);
+    setEditIndex(index);
+  };
+
+  const clearCompleted = () => {
+    const newTasks = tasks.filter(task => !task.completed);
+    setTasks(newTasks);
+  };
+
+  return (
+    <div style={{ padding: "20px", fontFamily: "Arial", maxWidth: "500px", margin: "auto" }}>
+      <h1>Advanced Todo App 📝✅</h1>
+
+      {/* Input + Add/Edit Button */}
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Enter task"
+        style={{ padding: "8px", width: "70%" }}
+      />
+      <button 
+        onClick={addTask} 
+        style={{ padding: "8px 15px", marginLeft: "10px", cursor: "pointer" }}
+      >
+        {editIndex !== null ? "Edit Task ✏️" : "Add Task 📝"}
+      </button>
+
+      {/* Clear Completed Button */}
+      <button 
+        onClick={clearCompleted} 
+        style={{ padding: "8px 15px", marginLeft: "10px", cursor: "pointer", background: "#f87171", color: "#fff" }}
+      >
+        Clear Completed 🧹
+      </button>
+
+      {/* Task List */}
+      <ul style={{ listStyle: "none", padding: 0, marginTop: "20px" }}>
+        {tasks.map((task, index) => (
+          <li 
+            key={index} 
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              marginBottom: "10px", 
+              background: "#e0e0e0", 
+              padding: "8px", 
+              borderRadius: "5px" 
+            }}
+          >
+            <input 
+              type="checkbox" 
+              checked={task.completed} 
+              onChange={() => toggleComplete(index)} 
+            />
+            <span 
+              style={{ 
+                flex: 1, 
+                marginLeft: "10px", 
+                textDecoration: task.completed ? "line-through" : "none" 
+              }}
+            >
+              {task.text}
+            </span>
+            <button onClick={() => editTask(index)} style={{ marginRight: "5px", cursor: "pointer" }}>Edit ✏️</button>
+            <button onClick={() => deleteTask(index)} style={{ cursor: "pointer" }}>Delete 🗑️</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<TodoAppAdvanced />);
+
+</script>
+</body>
+</html>
